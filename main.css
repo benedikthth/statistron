@@ -1,0 +1,53 @@
+.functionContainer{
+}
+.functionContainer textarea{ 
+    background-color: black;
+    border: dotted rgba(0, 255, 0, 0.25) 1px;
+    /* border: 1px dotted #0F0F0F;  */
+    margin-left: 10px;
+    color: lime; 
+}
+
+
+.functionContainer .delButton{
+    border-radius: 5px;
+    color: lime;
+    font-family: Open Sans;
+    font-size: 10px;
+    font-weight: 100;
+    padding: 5px;
+    background-color: #000000;
+    border: solid lime 2px;
+    text-decoration: none;
+    display: inline-block;
+    cursor: pointer;
+    margin-left: 1mm;
+    margin-right: 1mm;
+}
+
+.functionContainer .delButton:hover {
+    background: #003604;
+    text-decoration: none;
+}
+
+.functionContainer .visButton { 
+    border-radius: 5px;
+    color: lime;
+    font-family: Open Sans;
+    font-size: 10px;
+    font-weight: 100;
+    padding: 5px;
+    background-color: #000000;
+    border: solid lime 2px;
+    text-decoration: none;
+    display: inline-block;
+    cursor: pointer;
+    margin-left: 1mm;
+    margin-right: 1mm;
+}
+
+.functionContainer input { 
+    margin-top: auto;
+    background: #000000;
+    border: solid lime 1px;
+}
