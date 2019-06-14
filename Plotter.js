@@ -1,31 +1,4 @@
 
-let Gaussian = `
-    let t = ( 1 / ( Math.sqrt( 2*Math.PI*(sigma*sigma) )))
-    
-    let e = ( (-Math.pow(x-mean, 2)/ 2*sigma*sigma ))
-    
-    return (t * Math.pow(Math.E,e) )
-`
-
-let funky_sine = `
-return (
-    sin( x +now()/1000) +
-    sin( x*10 + now()/250)/4 
-) 
-`
-
-let boobie_func = `
-return Math.max(
-    Math.max( Math.max(0, sin(x)), -(((4*x)-(2*Math.PI))**2)+1.1),
-    Math.max( Math.max(0, sin(-x)), -(((4*x)+(2*Math.PI))**2)+1.1),
-    0.1
- )
- `
-
-let timed_sine = `
-    return sin(x + now()/1000)
-`
-
 
 let visualizer = {
     ctx: plotter.getContext('2d'),
@@ -38,6 +11,10 @@ let visualizer = {
         xMax.oninput = this.boundChange.bind(this, xMax)
         yMin.oninput = this.boundChange.bind(this, yMin)
         yMax.oninput = this.boundChange.bind(this, yMax)
+        xMin.value = this.bounds.xMin;
+        xMax.value = this.bounds.xMax;
+        yMin.value = this.bounds.yMin;
+        yMax.value = this.bounds.yMax;
     },
 
     boundChange : function(input){
@@ -85,8 +62,8 @@ let visualizer = {
 
    
     bounds: {
-        xMax: 2,
-        xMin: -2,
+        xMax: 4,
+        xMin: -4,
         yMax: 2,
         yMin: -2
     },

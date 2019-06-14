@@ -1,11 +1,12 @@
 
-reflexor = {mean:0/* empty object, */}
-
 let functionList = []
+
+    
 
 class FunctionObject { 
 
-    constructor(rootDiv ,inputBox, badStuffBox, delButton, colorPicker, visButton){
+    constructor(rootDiv ,inputBox, badStuffBox, delButton, colorPicker, visButton, dropdownBox, nameBox){
+        this.name = ''
         this.pdf = (x=>x)
         this.errorMsg = badStuffBox; 
         this.inputBox = inputBox;
@@ -13,15 +14,34 @@ class FunctionObject {
         this.rootDiv = rootDiv;
         this.colorPicker = colorPicker;
         this.visButton = visButton;
+        this.nameBox = nameBox;
+    // }
+    
         this.color = "white"
-
+        this.dropdownBox = dropdownBox;
         this.enabled = true;
 
         this.inputBox.oninput = this.handleFunctionChange.bind(this);
         this.delButton.onclick = this.delete.bind(this);
         this.colorPicker.oninput = this.handleColorChange.bind(this)
         this.visButton.onclick = this.toggleVisibility.bind(this);
+        this.dropdownBox.onchange = this.dropdownBoxChange.bind(this)   
+        this.nameBox.oninput = this.nameChange.bind(this);
         
+    }
+
+    nameChange(ex){
+        this.name = this.nameBox.value;
+
+
+
+    }
+
+    dropdownBoxChange(ex){
+        let selName = (this.dropdownBox.options[this.dropdownBox.selectedIndex].text)
+        let template = functionPresets.filter(x=>{return x.name === selName})[0]
+        this.inputBox.value = template.f
+        this.handleFunctionChange()
     }
 
     toggleVisibility(){
@@ -47,20 +67,46 @@ class FunctionObject {
     }
 
     handleFunctionChange (){
-            
-        let f = 'let sin=Math.sin;let now=Date.now;let max=Math.max;let PI=Math.PI;let min=Math.min;' + this.inputBox.value;
+        //remove unnamed funcs
+        let funcs = functionList.filter(x=>{return x.name !== '' })
+        //remove this function
+        funcs = funcs.filter(x=>{return x.name !== this.name })
+        //get the funcs,
+        // funcs = funcs.map(x=>x.pdf)
+
+        let prestring = 'let sin=Math.sin;let now=Date.now;let max=Math.max;let PI=Math.PI;let min=Math.min;'
+
+        let fvalString = ''
+        for(var i = 0; i < funcs.length; i++){
+            let e = funcs[i];
+            fvalString += `let ${e.name} = Function('x', '${prestring}${e.inputBox.value}')(x);`
+        }
+
+        // let f =  prestring + fvalString + this.inputBox.value;
+        let f =  prestring + this.inputBox.value;
+        
+        // console.log(f);
+        
         let somepdf = Math.sin
+        this.errorMsg.classList = []
+        this.errorMsg.classList.add('feedbackBox')
+
         try{
             somepdf = Function('x', f)
             somepdf(0)    
+            somepdf(visualizer.bounds.xMin)
+            somepdf(visualizer.bounds.xMax)
+
         } catch(e){
             // console.log('caught');
             this.errorMsg.innerHTML = e
+            this.errorMsg.classList.add('invalid')
             // console.log(e);
             return;
         }
-        this.pdf = somepdf
-        this.errorMsg.innerHTML = ""
+        this.pdf = somepdf;
+        this.errorMsg.innerHTML = "&#10003;";
+        this.errorMsg.classList.add('valid');
 
     }
 
@@ -74,27 +120,31 @@ class FunctionObject {
 
 function init(){ 
     addFunction()
-    addFunction()
 }
 
 
 function addFunction(){
-    
+
     let rootDiv = document.createElement('div');
     rootDiv.classList.add('functionContainer')
 
+    let nameBox = document.createElement('input')
 
     let funcStartDiv =  document.createElement('div');
     let funcEndDiv =  document.createElement('div');
     funcStartDiv.innerHTML = 'function(x){'
     funcEndDiv.innerHTML = '}'
     let inputBox = document.createElement('textarea')
+    let dropdownBox= document.createElement('select')
     let badStuffBox = document.createElement('span')
-    badStuffBox.style="color: red"
+
+    badStuffBox.innerHTML = "&#10003;"
 
     inputBox.value = "return x"
     inputBox.rows = 10
-    inputBox.cols = 20
+    inputBox.cols = 40
+
+    
 
     let delButton = document.createElement('button')
     delButton.classList.add('delButton')
@@ -108,20 +158,27 @@ function addFunction(){
     colorPicker.type= "color"
     colorPicker.value = "#FFFFFF"
 
-
+    for(var x in functionPresets){
+        
+        let option = document.createElement('option')
+        option.value = functionPresets[x].name
+        option.innerHTML = functionPresets[x].name
+        dropdownBox.appendChild(option)
+    }
 
     funcStartDiv.appendChild(delButton )
     funcStartDiv.appendChild(colorPicker)
     funcStartDiv.appendChild(visButton)
-
+    funcStartDiv.appendChild(nameBox)
     rootDiv.appendChild(funcStartDiv)
     rootDiv.appendChild(inputBox)
+    rootDiv.appendChild(dropdownBox)
     rootDiv.appendChild(funcEndDiv)
     rootDiv.appendChild(badStuffBox)
 
     functionHolder.appendChild(rootDiv)
 
-    let fObject = new FunctionObject(rootDiv, inputBox, badStuffBox, delButton, colorPicker, visButton)
+    let fObject = new FunctionObject(rootDiv, inputBox, badStuffBox, delButton, colorPicker, visButton, dropdownBox, nameBox)
 
 
     functionList.push(fObject) 

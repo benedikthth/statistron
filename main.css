@@ -1,5 +1,24 @@
 .functionContainer{
+    margin-bottom: 10px;
 }
+
+
+.functionContainer select { 
+    position: absolute;
+    color: lime;
+    background-color: black;
+}
+
+
+input { 
+    color: lime;
+    border: 1px solid lime;
+    background-color: black;
+    margin-bottom: 2px;
+}
+
+
+
 .functionContainer textarea{ 
     background-color: black;
     border: dotted rgba(0, 255, 0, 0.25) 1px;
@@ -50,4 +69,14 @@
     margin-top: auto;
     background: #000000;
     border: solid lime 1px;
+}
+
+.functionContainer .feedbackBox { 
+    font-size: 15px;
+}
+.functionContainer .valid {
+    color: green;
+}
+.functionContainer .invalid { 
+    color: red;
 }
