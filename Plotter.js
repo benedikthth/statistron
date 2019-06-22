@@ -4,7 +4,7 @@ let visualizer = {
     ctx: plotter.getContext('2d'),
     width: plotter.width,
     height: plotter.height,
-
+    
     init : function(){ 
         //bind bounds inputs.
         xMin.oninput = this.boundChange.bind(this, xMin)
@@ -15,10 +15,42 @@ let visualizer = {
         xMax.value = this.bounds.xMax;
         yMin.value = this.bounds.yMin;
         yMax.value = this.bounds.yMax;
+        sampling_frequency.addEventListener('input', this.changeSamplingFrequency.bind(this))
+        plotter.addEventListener('mousemove' , this.onHover.bind(this))
+
     },
 
+    mouse : {x: 0, y: 0},
+
+    changeSamplingFrequency: function(event){
+        this.scale = Number(sampling_frequency.value)
+    },
+
+    /**
+     * Converts from view space to world space.
+     * @param {*} x position of mouse in view matrix space
+     * @param {*} y position -||- 
+     */
+    vtwc: function(x, y ){
+        
+        xrange = (this.bounds.xMax - this.bounds.xMin);
+        yrange = (this.bounds.yMax - this.bounds.yMin);
+        
+        xptct = (x/this.width);
+        yptct = ((this.height-y)/this.height);
+        
+        return {
+            x: (xptct * xrange)+this.bounds.xMin, 
+            y: (yptct * yrange)+this.bounds.yMin
+        }
+        
+    },
+    
+    onHover: function(ev){
+      this.mouse = this.vtwc(event.offsetX, event.offsetY);
+    },
+    
     boundChange : function(input){
-        // console.log(input.value, input.name);
         this.bounds[input.name] = Number(input.value)
         this.middle = [
             
@@ -27,9 +59,7 @@ let visualizer = {
         ]
     },
         
-    pdf: function(x){
-        return Math.tan(x)
-    },
+    
 
 
     origin: {x:plotter.width/2, y:plotter.height/2 },
@@ -70,22 +100,34 @@ let visualizer = {
 
     middle: [0, 0],
 
-    scale: 0.01,
+    scale: Number(sampling_frequency.value),
 
 
 
 
     update: function(){
-
+        mouseColor = "#AA0000"
         //plot the grid and the axis
         this.PrepGraph();
         
+        this.ctx.beginPath()
+        mou = this.wmtx(this.mouse.x, this.mouse.y)
 
+        this.ctx.strokeStyle = mouseColor;
+        this.moCtx(this.wmtx(this.mouse.x, this.bounds.yMax))
+        this.liTo(this.wmtx(this.mouse.x, this.bounds.yMin))
+        this.ctx.stroke()
+        this.ctx.closePath()
+        
         //plot the functions
         for (let i = 0; i < functionList.length; i++) {
             const fObject = functionList[i];
 
             if(!fObject.enabled){
+                continue;
+            }
+
+            if(typeof(fObject.pdf) == 'undefined'){
                 continue;
             }
 
@@ -102,11 +144,37 @@ let visualizer = {
                 
             }
             this.ctx.stroke();  
-            this.ctx.closePath()
-            
-        }
+            this.ctx.closePath();
 
-        
+            this.ctx.beginPath();
+            // this.ctx.strokeStyle = mouseColor;
+            posY = fObject.pdf(this.mouse.x)
+            if(typeof(posY) != 'number'){
+                continue;
+            }
+            po = this.wmtx(this.mouse.x, posY )
+            // this.ctx.arc(po[0], po[1], 10, 0, 2*Math.PI);
+            // this.ctx.closePath()
+            // this.ctx.stroke();
+
+            //find tangent line 
+            dxdy = [fObject.pdf(this.mouse.x+this.scale) - fObject.pdf(this.mouse.x-this.scale), 2*this.scale]
+            ldxdy = Math.sqrt(Math.pow(dxdy[0],2)+Math.pow(dxdy[1], 2))
+            dxdy = [dxdy[0]/ldxdy, dxdy[1]/ldxdy]
+            lilen = 30
+            dxdy = [dxdy[0]*lilen, dxdy[1]*lilen]
+            textpos = [po[0]-dxdy[0], po[1]-dxdy[1]]
+            this.ctx.beginPath()
+            this.moCtx(po)
+            this.liTo(textpos)
+            this.ctx.stroke()
+            this.ctx.closePath()
+
+            this.ctx.fillStyle = "#FFFFFF"
+            // this.ctx.strokeText(posY.toPrecision(1), po[0]-11, po[1]+5);
+            this.ctx.font = "14px Georgia";
+            this.ctx.fillText(posY.toFixed(2), textpos[0]-20, textpos[1]);
+        }
 
         requestAnimationFrame(this.update.bind(this))
 

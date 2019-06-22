@@ -33,8 +33,6 @@ class FunctionObject {
     nameChange(ex){
         this.name = this.nameBox.value;
 
-
-
     }
 
     dropdownBoxChange(ex){
