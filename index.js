@@ -1,13 +1,14 @@
 
 let functionList = []
 
-    
+let plainFunctionList = {}
 
 class FunctionObject { 
 
     constructor(rootDiv ,inputBox, badStuffBox, delButton, colorPicker, visButton, dropdownBox, nameBox){
         this.name = ''
         this.pdf = (x=>x)
+        this.plainFunc = (x=>x)
         this.errorMsg = badStuffBox; 
         this.inputBox = inputBox;
         this.delButton = delButton;
@@ -72,28 +73,41 @@ class FunctionObject {
         //get the funcs,
         // funcs = funcs.map(x=>x.pdf)
 
-        let prestring = 'let sin=Math.sin;let now=Date.now;let max=Math.max;let PI=Math.PI;let min=Math.min;'
+        let prestring = `
+        let sin=Math.sin;let tan=Math.tan; let cos=Math.cos
+        let now=Date.now;
+        let max=Math.max;let min=Math.min;
+        let PI=Math.PI; let E = Math.E;
+        function diff(f){ return ((x)=>{ return f(x+0.05)-f(x-0.05) }) }        
+        `
 
         let fvalString = ''
         for(var i = 0; i < funcs.length; i++){
             let e = funcs[i];
-            fvalString += `let ${e.name} = Function('x', '${prestring}${e.inputBox.value}')(x);`
+            if(functionList.filter(x=>{return x.name == e.name}).length == 0){continue;}
+            fvalString += `let ${e.name} = functionList.filter(x=>{return x.name == "${e.name}"})[0].plainFunc;`
         }
-
-        // let f =  prestring + fvalString + this.inputBox.value;
-        let f =  prestring + this.inputBox.value;
+        // fvalString += `console.log(azz);`
+        console.log(fvalString)
+        let f =  prestring + fvalString + this.inputBox.value;
+        let plainf =  prestring + this.inputBox.value;
         
         // console.log(f);
         
         let somepdf = Math.sin
+        let somePlainF = Math.sin
         this.errorMsg.classList = []
         this.errorMsg.classList.add('feedbackBox')
 
         try{
             somepdf = Function('x', f)
+            somePlainF = Function('x', plainf)
             somepdf(0)    
+            // somePlainF(0)
             somepdf(visualizer.bounds.xMin)
+            // somePlainF(visualizer.bounds.xMin)
             somepdf(visualizer.bounds.xMax)
+            // somePlainF(visualizer.bounds.xMax)
 
         } catch(e){
             // console.log('caught');
@@ -103,6 +117,7 @@ class FunctionObject {
             return;
         }
         this.pdf = somepdf;
+        this.plainFunc = somePlainF
         this.errorMsg.innerHTML = "&#10003;";
         this.errorMsg.classList.add('valid');
 
