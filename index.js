@@ -78,17 +78,22 @@ class FunctionObject {
         let now=Date.now;
         let max=Math.max;let min=Math.min;
         let PI=Math.PI; let E = Math.E;
-        function diff(f){ return ((x)=>{ return f(x+0.05)-f(x-0.05) }) }        
+        function diff(f){ return ((x)=>{ return (f(x+0.05)-f(x-0.05))/0.1 }) }        
         `
 
         let fvalString = ''
         for(var i = 0; i < funcs.length; i++){
             let e = funcs[i];
             if(functionList.filter(x=>{return x.name == e.name}).length == 0){continue;}
-            fvalString += `let ${e.name} = functionList.filter(x=>{return x.name == "${e.name}"})[0].plainFunc;`
+            fvalString += `
+            let ${e.name} = (
+                functionList.filter(x=>{return x.name == "${e.name}"}).length !== 0 
+                )? functionList.filter(x=>{return x.name == "${e.name}"})[0].plainFunc : undefined;
+            `
         }
         // fvalString += `console.log(azz);`
         console.log(fvalString)
+        
         let f =  prestring + fvalString + this.inputBox.value;
         let plainf =  prestring + this.inputBox.value;
         
@@ -118,6 +123,7 @@ class FunctionObject {
         }
         this.pdf = somepdf;
         this.plainFunc = somePlainF
+
         this.errorMsg.innerHTML = "&#10003;";
         this.errorMsg.classList.add('valid');
 
