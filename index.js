@@ -88,14 +88,13 @@ class FunctionObject {
             fvalString += `
             let ${e.name} = (
                 functionList.filter(x=>{return x.name == "${e.name}"}).length !== 0 
-                )? functionList.filter(x=>{return x.name == "${e.name}"})[0].plainFunc : undefined;
+                )? functionList.filter(x=>{return x.name == "${e.name}"})[0].pdf : undefined;
             `
         }
         // fvalString += `console.log(azz);`
         console.log(fvalString)
         
         let f =  prestring + fvalString + this.inputBox.value;
-        let plainf =  prestring + this.inputBox.value;
         
         // console.log(f);
         
@@ -106,7 +105,6 @@ class FunctionObject {
 
         try{
             somepdf = Function('x', f)
-            somePlainF = Function('x', plainf)
             somepdf(0)    
             // somePlainF(0)
             somepdf(visualizer.bounds.xMin)
@@ -122,7 +120,6 @@ class FunctionObject {
             return;
         }
         this.pdf = somepdf;
-        this.plainFunc = somePlainF
 
         this.errorMsg.innerHTML = "&#10003;";
         this.errorMsg.classList.add('valid');

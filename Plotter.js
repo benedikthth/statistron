@@ -50,21 +50,35 @@ let visualizer = {
 
 
 	zoom: function(ev){
-		console.log(ev);
+		ev.preventDefault()
 		delta = ev.deltaY
 		zoomAmount = 1.5
-		zoomOut = 1/zoomAmount
-		if(Math.sign(delta) == 1){
-			this.bounds.xMax *= zoomAmount
-			this.bounds.xMin *= zoomAmount
-			this.bounds.yMax *= zoomAmount
-			this.bounds.yMin *= zoomAmount
-		} else {
-			this.bounds.xMax *= zoomOut 
-			this.bounds.xMin *= zoomOut
-			this.bounds.yMax *= zoomOut
-			this.bounds.yMin *= zoomOut
-		}
+		zoom = (Math.sign(delta) == 1) ? zoomAmount : 1/zoomAmount;
+
+		middleY = (this.bounds.yMax + this.bounds.yMin) / 2
+		middleX= (this.bounds.xMax + this.bounds.xMin) / 2
+		xMaxVal = this.bounds.xMax - middleX;
+		xMinVal = middleX - this.bounds.xMin; 
+		yMaxVal = this.bounds.yMax - middleY;
+		yMinVal = middleY - this.bounds.yMin; 
+
+		this.bounds.xMax = middleX + (zoom * xMaxVal)
+		this.bounds.xMin = middleX - (zoom * xMinVal)
+		this.bounds.yMax = middleY + (zoom * yMaxVal)
+		this.bounds.yMin = middleY - (zoom * yMinVal) 
+
+
+		// if(Math.sign(delta) == 1){
+		// 	this.bounds.xMax  zoomAmount
+		// 	this.bounds.xMin *= zoomAmount
+		// 	this.bounds.yMax *= zoomAmount
+		// 	this.bounds.yMin *= zoomAmount
+		// } else {
+		// 	this.bounds.xMax *= zoomOut 
+		// 	this.bounds.xMin *= zoomOut
+		// 	this.bounds.yMax *= zoomOut
+		// 	this.bounds.yMin *= zoomOut
+		// }
 		this.represent()
 	},
 
@@ -79,8 +93,8 @@ let visualizer = {
 			delta = posAdd(this.mouse_down_pos, posNeg(this.mouse)) // mdpos - mouse -> vector of mag. 
 			dwi = 0.001
 
-			this.bounds.xMin = (this.mouse_down_bounds.xMin + delta.x)
-			this.bounds.yMin = (this.mouse_down_bounds.yMin + delta.y)
+			this.bounds.xMin = (this.mouse_down_bounds.xMin + delta.x*0.7)
+			this.bounds.yMin = (this.mouse_down_bounds.yMin + delta.y*0.7)
 			this.bounds.xMax = (this.bounds.xMin + (this.mouse_down_bounds.xMax - this.mouse_down_bounds.xMin))
 			this.bounds.yMax = (this.bounds.yMin + (this.mouse_down_bounds.yMax - this.mouse_down_bounds.yMin)) 
 			
