@@ -16,13 +16,13 @@ class FunctionObject {
         this.colorPicker = colorPicker;
         this.visButton = visButton;
         this.nameBox = nameBox;
-    // }
     
         this.color = "white"
         this.dropdownBox = dropdownBox;
         this.enabled = true;
 
         this.inputBox.oninput = this.handleFunctionChange.bind(this);
+        this.inputBox.onkeydown = this.functionKeyPress.bind(this)
         this.delButton.onclick = this.delete.bind(this);
         this.colorPicker.oninput = this.handleColorChange.bind(this)
         this.visButton.onclick = this.toggleVisibility.bind(this);
@@ -65,7 +65,32 @@ class FunctionObject {
         this.color = this.colorPicker.value
     }
 
-    handleFunctionChange (){
+    functionKeyPress(ev){
+
+        if(ev.key == 'Tab'){
+            ev.preventDefault()
+
+            var caretPos = ev.target.selectionStart;
+
+            var front = (ev.target.value).substring(0, caretPos);
+
+            var back = (ev.target.value).substring(ev.target.selectionEnd, ev.target.value.length);
+            
+            ev.target.value = front + '    ' + back;
+            
+            caretPos = caretPos + 4;
+            ev.target.selectionStart = caretPos;
+            ev.target.selectionEnd = caretPos;
+            ev.target.focus();
+
+        }
+    }
+
+    handleFunctionChange (ev){
+        console.log(ev)
+        
+        if(ev.data == ' '){ return; }
+
         //remove unnamed funcs
         let funcs = functionList.filter(x=>{return x.name !== '' })
         //remove this function
