@@ -5,21 +5,25 @@ let plainFunctionList = {}
 
 class FunctionObject { 
 
-    constructor(rootDiv ,inputBox, badStuffBox, delButton, colorPicker, visButton, dropdownBox, nameBox){
+    constructor(rootDiv ,inputBox, badStuffBox, delButton, colorPicker, visButton, dropdownBox, nameBox, toggle_tb_button, widthBox){
         this.name = ''
         this.pdf = (x=>x)
         this.plainFunc = (x=>x)
         this.errorMsg = badStuffBox; 
         this.inputBox = inputBox;
+        this.inputBox.value = functionPresets[0].f
         this.delButton = delButton;
         this.rootDiv = rootDiv;
         this.colorPicker = colorPicker;
         this.visButton = visButton;
         this.nameBox = nameBox;
-    
+        this.toggle_tb_button = toggle_tb_button
+        this.widthBox = widthBox;
+        this.width = Number(widthBox.value)
         this.color = "white"
         this.dropdownBox = dropdownBox;
         this.enabled = true;
+        this.showTextBox = true;
 
         this.inputBox.oninput = this.handleFunctionChange.bind(this);
         this.inputBox.onkeydown = this.functionKeyPress.bind(this)
@@ -28,7 +32,13 @@ class FunctionObject {
         this.visButton.onclick = this.toggleVisibility.bind(this);
         this.dropdownBox.onchange = this.dropdownBoxChange.bind(this)   
         this.nameBox.oninput = this.nameChange.bind(this);
-        
+        this.toggle_tb_button.onclick = this.toggle_textbox.bind(this)
+        this.widthBox.oninput= this.handleWidthChange.bind(this)
+        this.handleFunctionChange()
+    }
+
+    handleWidthChange(event){
+        this.width = Number(this.widthBox.value)
     }
 
     nameChange(ex){
@@ -45,20 +55,23 @@ class FunctionObject {
 
     toggleVisibility(){
         this.enabled = !this.enabled;
-        if(this.enabled){
-            this.visButton.classList = []
-            this.visButton.classList.add('enabled')
-            this.visButton.classList.add('visButton')  
-            this.visButton.innerHTML = "O" 
-        } else {
-            this.visButton.classList = []
-            this.visButton.classList.add('disabled')
-            this.visButton.classList.add('visButton')  
-            this.visButton.innerHTML = " _ " 
-        }
+        this.visButton.innerHTML = this.enabled? "O" : "_"; 
     }
 
-    
+    toggle_textbox(){
+        this.showTextBox = !this.showTextBox;
+        if(this.showTextBox){
+            this.toggle_tb_button.innerHTML = "-"
+            this.inputBox.classList = []
+            this.dropdownBox.classList = []
+            this.errorMsg.classList.remove('invisible')
+        } else {
+            this.toggle_tb_button.innerHTML = "+"
+            this.inputBox.classList = ['invisible']
+            this.dropdownBox.classList = ['invisible']
+            this.errorMsg.classList.add('invisible')
+        }
+    } 
 
     handleColorChange(){
         // console.log(this.colorPicker.value)
@@ -87,9 +100,11 @@ class FunctionObject {
     }
 
     handleFunctionChange (ev){
+        if(ev){
+            if(ev.data == ' '){ return; }
+        }
         console.log(ev)
         
-        if(ev.data == ' '){ return; }
 
         //remove unnamed funcs
         let funcs = functionList.filter(x=>{return x.name !== '' })
@@ -100,10 +115,11 @@ class FunctionObject {
 
         let prestring = `
         let sin=Math.sin;let tan=Math.tan; let cos=Math.cos
-        let now=Date.now;
+        let now=Date.now();
         let max=Math.max;let min=Math.min;
         let PI=Math.PI; let E = Math.E;
-        function diff(f){ return ((x)=>{ return (f(x+0.05)-f(x-0.05))/0.1 }) }        
+        function diff(f){ return ((x)=>{ return (f(x+0.05)-f(x-0.05))/0.1 }) }
+        let pow = Math.pow 
         `
 
         let fvalString = ''
@@ -117,7 +133,6 @@ class FunctionObject {
             `
         }
         // fvalString += `console.log(azz);`
-        console.log(fvalString)
         
         let f =  prestring + fvalString + this.inputBox.value;
         
@@ -170,22 +185,27 @@ function addFunction(){
     rootDiv.classList.add('functionContainer')
 
     let nameBox = document.createElement('input')
-
+    nameBox.style = "width:80px;";
     let funcStartDiv =  document.createElement('div');
     let funcEndDiv =  document.createElement('div');
+    let toggle_tb_button = document.createElement('button')
+    toggle_tb_button.innerHTML = "-"
     funcStartDiv.innerHTML = 'function(x){'
     funcEndDiv.innerHTML = '}'
     let inputBox = document.createElement('textarea')
     let dropdownBox= document.createElement('select')
     let badStuffBox = document.createElement('span')
-
+    let width_input = document.createElement('input')
+    width_input.type = 'number'
+    width_input.style = 'width: 80px; margin-left: 2px;'
+    width_input.value = 1;
     badStuffBox.innerHTML = "&#10003;"
 
     inputBox.value = "return x"
     inputBox.rows = 10
     inputBox.cols = 40
 
-    
+    toggle_tb_button.classList = ['visButton']
 
     let delButton = document.createElement('button')
     delButton.classList.add('delButton')
@@ -194,6 +214,9 @@ function addFunction(){
     visButton.innerHTML = "O"
     visButton.classList.add('enabled')
     delButton.innerHTML = "X"
+
+
+
 
     let colorPicker = document.createElement('input')
     colorPicker.type= "color"
@@ -206,11 +229,12 @@ function addFunction(){
         option.innerHTML = functionPresets[x].name
         dropdownBox.appendChild(option)
     }
-
+    funcStartDiv.prepend(toggle_tb_button)
     funcStartDiv.appendChild(delButton )
     funcStartDiv.appendChild(colorPicker)
     funcStartDiv.appendChild(visButton)
     funcStartDiv.appendChild(nameBox)
+    funcStartDiv.appendChild(width_input)
     rootDiv.appendChild(funcStartDiv)
     rootDiv.appendChild(inputBox)
     rootDiv.appendChild(dropdownBox)
@@ -219,7 +243,9 @@ function addFunction(){
 
     functionHolder.appendChild(rootDiv)
 
-    let fObject = new FunctionObject(rootDiv, inputBox, badStuffBox, delButton, colorPicker, visButton, dropdownBox, nameBox)
+    let fObject = new FunctionObject(rootDiv, inputBox, badStuffBox, delButton, 
+                                    colorPicker, visButton, dropdownBox, nameBox, 
+                                    toggle_tb_button, width_input)
 
 
     functionList.push(fObject) 

@@ -2,9 +2,9 @@
 
 let visualizer = {
 	ctx: plotter.getContext('2d'),
-	width: plotter.width,
-	height: plotter.height,
-	
+	width: plotter.scrollWidth,
+	height: plotter.scrollHeight,
+	aspect_ratio: this.width/this.height,
 	init : function(){ 
 		//bind bounds inputs.
 		xMin.oninput = this.boundChange.bind(this, xMin)
@@ -17,12 +17,27 @@ let visualizer = {
 		plotter.addEventListener('mousedown', this.onMouseDown.bind(this))
 		plotter.addEventListener('mouseup', this.onMouseUp.bind(this))
 		plotter.addEventListener('wheel', this.zoom.bind(this))
+		plotter.addEventListener('onresize', this.changeSize.bind(this))
+		this.get_plot_dimension()
+	},
+
+	get_plot_dimension: function(){
+		this.width = plotter.scrollWidth;
+		this.height= plotter.scrollHeight;
+		this.aspect_ratio = this.width/ this.height;
+		plotter.height = this.height
+		plotter.width = this.width
 	},
 
 	mouse : {x: 0, y: 0},
 	mouse_down : false,
 	mouse_down_pos : null,
 	mouse_down_bounds : null,
+
+	changeSize: function(event){
+		console.log(event);
+		
+	},
 
 	changeSamplingFrequency: function(event){
 		this.scale = Number(sampling_frequency.value)
@@ -38,11 +53,11 @@ let visualizer = {
 		xrange = (this.bounds.xMax - this.bounds.xMin);
 		yrange = (this.bounds.yMax - this.bounds.yMin);
 		
-		xptct = (x/this.width);
-		yptct = ((this.height-y)/this.height);
+		xptct = (x/this.width)
+		yptct = ((this.height-y)/this.height) 
 		
 		return {
-			x: (xptct * xrange)+this.bounds.xMin, 
+			x: ((xptct * xrange)+this.bounds.xMin) , 
 			y: (yptct * yrange)+this.bounds.yMin
 		}
 		
@@ -83,9 +98,9 @@ let visualizer = {
 	},
 
 	onHover: function(ev){
+		// console.log(event.offsetX, event.offsetY);
+		
 		this.mouse = this.vtwc(event.offsetX, event.offsetY);
-		// console.log(this.mouse_down_pos)
-		// console.log(event)
 		if(this.mouse_down){
 			if( Math.sqrt( Math.pow(ev.movementX, 2) + Math.pow(ev.movementY, 2)  ) < 1.5){
 				return;
@@ -99,7 +114,6 @@ let visualizer = {
 			this.bounds.yMax = (this.bounds.yMin + (this.mouse_down_bounds.yMax - this.mouse_down_bounds.yMin)) 
 			
 			this.represent()
-			// console.log(this.bounds)	
 		}
 
 	},
@@ -128,9 +142,6 @@ let visualizer = {
 		this.mouse_down_bounds = null;
 	},
 
-	reflect: function(){
-		
-	},
 	
 	boundChange : function(input){
 		this.bounds[input.name] = Number(input.value)
@@ -144,9 +155,13 @@ let visualizer = {
 	
 
 
-	origin: {x:plotter.width/2, y:plotter.height/2 },
+	origin: {x:plotter.scrollWidth/2, y:plotter.scrollHeight/2 },
 
-
+	/**
+	 * World to window coordinates. 
+	 * @param {*} x 
+	 * @param {*} y 
+	 */
 	wmtx: function(x, y){
 
 		
@@ -159,14 +174,15 @@ let visualizer = {
 
 
 		rx = x/xrange
+
 		ry = y/yrange 
 
-		x = rx * plotter.width
-		y = ry * plotter.height
+		x = rx * this.width 
+		y = ry * this.height 
 		
 		return [
-			x,
-			plotter.height-y 
+			x, 
+			(this.height-y) 
 		];
 	 
 	},
@@ -175,42 +191,85 @@ let visualizer = {
 	bounds: {
 		xMax: 4,
 		xMin: -4,
-		yMax: 2,
-		yMin: -2
+		yMax: 4,
+		yMin: -4
 	},
 
 	middle: [0, 0],
 
 	scale: Number(sampling_frequency.value),
 
+	/**
+	 * Change the y boundaries to match the aspect ratio of the cavas.
+	 */
+	change_ybound_to_AR: function(){
+		this.get_plot_dimension();
+		let xrange = this.bounds.yMax - this.bounds.xMin;
+		let yrange = this.bounds.yMax - this.bounds.yMin;
+		// this.aspect_ratio = width / height
+		let desired_yrange = xrange / this.aspect_ratio
+		let ratio = yrange / desired_yrange
+		this.bounds.yMax /= ratio;
+		this.bounds.yMin /= ratio;
+		this.represent()
+	},
 
+	/**
+	 * Change the x boundaries to match AR of canvas
+	 */
+	change_xbound_to_AR: function(){
 
+		this.get_plot_dimension();
+		let xrange = this.bounds.yMax - this.bounds.xMin;
+		let yrange = this.bounds.yMax - this.bounds.yMin;
+		// this.aspect_ratio = width / height
+		let desired_xrange = yrange * this.aspect_ratio
+		let ratio = xrange / desired_xrange
+		this.bounds.xMax /= ratio;
+		this.bounds.xMin /= ratio;
+		this.represent()
+	},
 
 	update: function(){
+		
+		this.ctx.font = "14px Cascadia Code";
+
+		this.get_plot_dimension()
 		mouseColor = "#AA0000"
 		//plot the grid and the axis
 		this.PrepGraph();
-		
 		this.ctx.beginPath()
 		mou = this.wmtx(this.mouse.x, this.mouse.y)
-
+		
 		this.ctx.strokeStyle = mouseColor;
 		this.moCtx(this.wmtx(this.mouse.x, this.bounds.yMax))
 		this.liTo(this.wmtx(this.mouse.x, this.bounds.yMin))
 		this.ctx.stroke()
 		this.ctx.closePath()
 		
-		//plot the functions
-		for (let i = 0; i < functionList.length; i++) {
-			const fObject = functionList[i];
-			this.plotFunc(fObject)
+		let sf = Number(sampling_frequency.value);
+		if(sf > 0){
+			//plot the functions
+			for (let i = 0; i < functionList.length; i++) {
+				const fObject = functionList[i];
+				this.plotFunc(fObject, sf)
+			}
 		}
 
+
+		this.ctx.fillStyle = "#FFFFFF"
+		// this.ctx.strokeText(posY.toPrecision(1), po[0]-11, po[1]+5);
+		// this.ctx.font = "14px Cascadia Code";
+		
+		this.ctx.fillText(`${this.mouse.x.toFixed(2)}, ${this.mouse.y.toFixed(2)}`, mou[0], mou[1]);
+		
 		requestAnimationFrame(this.update.bind(this))
 
 	},
-
-	plotFunc: function(fObject){ 
+	/**
+	 * Takes a function object with some options and a pdf and sampling_frequency which is the number of datapoints per unit. 
+	 */
+	plotFunc: function(fObject, sampling_frequency){ 
 
 			if(!fObject.enabled){
 				return;
@@ -219,17 +278,27 @@ let visualizer = {
 			if(typeof(fObject.pdf) == 'undefined'){
 				return
 			}
+			let oldLineWidth = this.ctx.lineWidth; 
+			// let screen_width = this.bounds.xMax - this.bounds.xMin;
+			//let no_data_points = sampling_frequency * screen_width;
+
+			let scale = 1/sampling_frequency; 
 
 			this.ctx.strokeStyle = fObject.color;
-	
+			
+			this.ctx.lineWidth = fObject.width;
 			this.ctx.beginPath()
-			for(var x = this.bounds.xMin+this.scale; x < this.bounds.xMax; x+=this.scale){
+			this.ctx.lineCap = "round"
+			for(var x = this.bounds.xMin-scale; x < this.bounds.xMax+ (1/scale) ; x+=scale){
 				try{ 
-				let former = fObject.pdf(x-this.scale)
-				let yVal = fObject.pdf(x) //, mean.value, sigma.value)
-				
-				this.moCtx( this.wmtx(x-this.scale, former)) ;
-				this.liTo(  this.wmtx(x, yVal) )
+					let former = fObject.pdf(x-scale)
+					let yVal = fObject.pdf(x)
+					
+					// let xy = this.wmtx(x-scale, former)
+					// this.ctx.arc(xy[0], xy[1], 1, 0, 2*Math.PI)
+					
+					this.moCtx( this.wmtx(x-scale, former)) ;
+					this.liTo(  this.wmtx(x, yVal) )
 				} catch(e){
 
 					return;
@@ -241,18 +310,21 @@ let visualizer = {
 			this.ctx.beginPath();
 			// this.ctx.strokeStyle = mouseColor;
 			posY = fObject.pdf(this.mouse.x) 
+			this.ctx.lineWidth = oldLineWidth;	
 			if(typeof(posY) != 'number'){
 				return
 			}
 			po = this.wmtx(this.mouse.x, posY )
 
 			//find tangent line 
-			dxdy = [fObject.pdf(this.mouse.x+this.scale) - fObject.pdf(this.mouse.x-this.scale), 2*this.scale]
+			dxdy = [fObject.pdf(this.mouse.x+ (1/this.scale) ) - fObject.pdf(this.mouse.x-(1/this.scale)), 2*(1/this.scale)]
+			
 			ldxdy = Math.sqrt(Math.pow(dxdy[0],2)+Math.pow(dxdy[1], 2))
 			dxdy = [dxdy[0]/ldxdy, dxdy[1]/ldxdy]
 			lilen = 30
 			dxdy = [dxdy[0]*lilen, dxdy[1]*lilen]
 			textpos = [po[0]-dxdy[0], po[1]-dxdy[1]]
+
 			this.ctx.beginPath()
 			this.moCtx(po)
 			this.liTo(textpos)
@@ -261,7 +333,7 @@ let visualizer = {
 
 			this.ctx.fillStyle = "#FFFFFF"
 			// this.ctx.strokeText(posY.toPrecision(1), po[0]-11, po[1]+5);
-			this.ctx.font = "14px Georgia";
+			this.ctx.font = "14px Cascadia code";
 			this.ctx.fillText(posY.toFixed(2), textpos[0]-20, textpos[1]);
 	},
 
@@ -276,42 +348,63 @@ let visualizer = {
 		bhs = this.wmtx(0, this.bounds.yMax);
 		
 		this.ctx.beginPath();
-		this.ctx.strokeStyle = '#FFFFFF';
+		this.ctx.strokeStyle = '#05633f7F';
+		this.ctx.lineWidth = 3
 		this.ctx.moveTo(lhs[0], lhs[1]);
 		this.ctx.lineTo(rhs[0], rhs[1]);
 		this.ctx.moveTo(ths[0], ths[1]);
 		this.ctx.lineTo(bhs[0], bhs[1]);
 		this.ctx.stroke()
 		this.ctx.closePath()
-
+		this.ctx.lineWidth = 1;
 
 		
 		this.ctx.strokeStyle = '#006000';
 
 		this.ctx.beginPath()
-		let notchLen = Math.max(Math.max(this.bounds.xMax, this.bounds.xMin), Math.max(this.bounds.yMin, this.bounds.yMax))
 
-		
+
+		maxNotch = 9;
+		let height = this.bounds.yMax - this.bounds.yMin;
+		let notchDist = height / maxNotch; 
+		if(height > 4){
+			notchDist = notchDist - (notchDist%0.25)
+		} else { 
+			notchDist = 0.25;
+		}
+			
 		//notches
-		for(var i = this.bounds.yMin - (this.bounds.yMin % 0.25); i < this.bounds.yMax ; i+=0.25){
+		for(var i = this.bounds.yMin - (this.bounds.yMin % notchDist); i < this.bounds.yMax ; i+=notchDist){
+			if (i == 0){
+				continue;
+			}
 			let loc = this.wmtx(0, i)[1]
 			//create line from far-left to far right
 			this.moCtx([0, loc])
-			this.liTo([plotter.width, loc])
+			this.liTo([plotter.scrollWidth, loc])
 			// conditionally draw number
 			if(i%1 == 0){
 				this.ctx.fillStyle = "#00F000"
-				this.ctx.font = "8px";
+				this.ctx.font = "4px";
 				let xy = this.wmtx(0.25, i)
 				this.ctx.fillText(i, xy[0], xy[1]-4);
 			}
 		}
 		
-		for(var i = this.bounds.xMin - (this.bounds.xMin % 0.25); i < this.bounds.xMax; i+=0.25){
+
+		let width = this.bounds.xMax - this.bounds.xMin;
+		//max 100 notches . 
+
+		notchDist = width/maxNotch;
+		notchDist = (width > 4)? notchDist - (notchDist % 0.25) : 0.25; 
+
+		for(var i = this.bounds.xMin - (this.bounds.xMin % notchDist); i < this.bounds.xMax; i+=notchDist){
+			if(i == 0 ){
+				continue;
+			}	
 			let loc = this.wmtx(i, 0)[0]
 			this.moCtx([loc, 0])//this.wmtx(i, notchLen));
-			this.liTo([loc, plotter.height])//this.wmtx(i, -notchLen));
-			
+			this.liTo([loc, plotter.scrollHeight])//this.wmtx(i, -notchLen));
 			if(i%1 == 0 && i!=0){
 				this.ctx.fillStyle = "#00F000"
 				this.ctx.font = "8px";

@@ -1,6 +1,14 @@
 let functionPresets = [
-
-
+    
+{name: 'cartoid', f:
+`xx = (x + now /1000) / 3
+return ( Math.pow(sin(xx), 200)*4 ) + // R
+    (Math.pow(sin(xx+0.6), 400)/2.3) - // P 
+    (Math.pow(sin(xx+0.1), 400)*2.5)-    // Q
+    (Math.pow(sin(xx-0.1), 400)*2) +      // S
+    (Math.pow(sin(xx-0.5), 300)/2.5) +      // T
+    (Math.pow(sin(xx-0.9), 300)/2.5)       // U`},
+    
 {name: 'plain', f: 'return x'},
 
 
@@ -15,8 +23,8 @@ return (t * Math.pow(Math.E,e) )`},
 
 {name: 'funky_sine', f:
 `return (
-    sin( x +now()/1000) +
-    sin( x*10 + now()/250)/4 
+    sin( x +now/1000) +
+    sin( x*10 + now/250)/4 
 )`},
     
 
@@ -31,7 +39,7 @@ return (t * Math.pow(Math.E,e) )`},
 {name:'sawtooth', f:
 `let n = now()/1000
 x = x-n
-let p = 1 //+ (sin(now()/100)+1)/2;
+let p = 1 //+ (sin(now/100)+1)/2;
 
 let txp = Math.floor((2*x/p) + 0.5)
 
@@ -41,5 +49,8 @@ let sp = (-1)**txp
 return (4/p * fp * sp)`},
 
 {name: 'timed_sine', f: 
-`return sin(x + now()/1000)`}
+`return sin(x + now/1000)`}
+
+
+
 ]

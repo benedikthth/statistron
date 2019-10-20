@@ -10,30 +10,55 @@
     <script src="index.js"></script>
 </head>
 <body style="background-color: black; color:lime   ">
-    
-    <div style="display: inline-block">
-        <input type="number" name="xMin" style="width:50%" value=-3.14  id="xMin"> <label for="xMin">xmin</label>  <br />
-        <input type="number" name="xMax" style="width:50%" value=3.14 id="xMax"> <label for="xMax">xmax</label>
-    </div>
-    <div style="display: inline-block">
-        <input type="number" name="yMin" style="width:50%" value=-3.14  id="yMin"> <label for="yMin">ymin</label>  <br />
-        <input type="number" name="yMax" style="width:50%" value=3.14  id="yMax"> <label for="yMax">ymax</label>
-    </div>
-    <div>
-        <input type="range" name="sampling_frequency" min="0.01" max="1" step="0.05" value="0.01" id="sampling_frequency"><label for="sampling_frequency">Sampling Frequency</label>
-    </div>
-    <div>
+    <div style="margin: auto;">
         
-        <div style="display: block">
-            <canvas id="plotter" height="400" width="400" style="border: 1px solid green"></canvas> 
+        <div>
+            <div style="display: inline-block">
+                <input type="number" name="xMin" style="width:50%" value=-3.14  id="xMin"> <label for="xMin">xmin</label>  <br />
+                <input type="number" name="xMax" style="width:50%" value=3.14 id="xMax"> <label for="xMax">xmax</label>
+            </div>
+            <div style="display: inline-block">
+                <input type="number" name="yMin" style="width:50%" value=-3.14  id="yMin"> <label for="yMin">ymin</label>  <br />
+                <input type="number" name="yMax" style="width:50%" value=3.14  id="yMax"> <label for="yMax">ymax</label>
+            </div>
+            <div>
+                <input type="number" name="sampling_frequency"  step="0.05" value="5" id="sampling_frequency"><label for="sampling_frequency">Sampling Frequency</label>
+            </div>
         </div>
 
-        <div style="display: block">
-            <div id="functionHolder">
+        <div>
+            <button id="fixY">Fix Y AR</button>
+            <button id="fixX">Fix X AR</button>
         </div>
 
-        <button onclick="addFunction()">+</button>
+    </div> 
+
+    
+    <div id="canvasContainer">
+        <canvas id="plotter"  style="border: 1px solid green"></canvas> 
     </div>
+
+    <div class="bottom_part_container">
+        <div class="functions">
+            <button onclick="addFunction()">+</button>            
+            <div style="display: block">
+                <div id="functionHolder"></div>
+            </div>
+
+        </div>
+        <div class='legend'>
+            <ul>
+                <li>sin     : sinus(x)</li>
+                <li>cos     : cosine(x)</li>
+                <li>diff    : diff(f) = differential of some function f returns a function</li>
+                <li>now     : current time in milliseconds</li>
+                <li>min     : min(x, y) returns the minimum of x and y</li>
+                <li>max     : max(x, y) returns the maximum of x and y</li>
+                <li>pow     : pow(x, y) x to the power of y</li>
+            </ul>
+        </div>
+    </div>
+
     
         <!-- <button onclick="funcer.value='return Math.sin(x)';visualizer.handleFunctionChange()">Sinus</button>
         <button onclick="funcer.value=Gaussian;visualizer.handleFunctionChange()">Gaussian</button>
