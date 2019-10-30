@@ -18,15 +18,40 @@ let visualizer = {
 		plotter.addEventListener('mouseup', this.onMouseUp.bind(this))
 		plotter.addEventListener('wheel', this.zoom.bind(this))
 		plotter.addEventListener('onresize', this.changeSize.bind(this))
+		fix_AR_y.addEventListener('click', this.change_ybound_to_AR.bind(this))
+		fix_AR_x.addEventListener('click', this.change_xbound_to_AR.bind(this))
+		document.body.addEventListener('keydown', this.handleKeyPress.bind(this))
 		this.get_plot_dimension()
+		this.change_ybound_to_AR()
+	},
+
+	handleKeyPress: function(event){
+		console.log(event)
+		if(event.key == 'f'){
+			this.toggle_fullscreen()
+			this.change_ybound_to_AR()
+		}
 	},
 
 	get_plot_dimension: function(){
 		this.width = plotter.scrollWidth;
 		this.height= plotter.scrollHeight;
-		this.aspect_ratio = this.width/ this.height;
+		this.aspect_ratio = this.width/ this.height ;
+
 		plotter.height = this.height
 		plotter.width = this.width
+	},
+
+	is_fullscreen : false,
+	
+	toggle_fullscreen : ()=>{
+
+		this.is_fullscreen = !this.is_fullscreen
+		if(this.is_fullscreen){
+			plotter.classList = ['fullScreenPlotter']
+		} else { 
+			plotter.classList = []
+		}
 	},
 
 	mouse : {x: 0, y: 0},
@@ -36,7 +61,6 @@ let visualizer = {
 
 	changeSize: function(event){
 		console.log(event);
-		
 	},
 
 	changeSamplingFrequency: function(event){
@@ -62,7 +86,14 @@ let visualizer = {
 		}
 		
 	},
+	
+	check_fullscreen: function(){
+		if(window['fullScreen'] !== undefined) {
+      		return window.fullScreen;
+    	}
+		return (!window.screenTop && !window.screenY) 
 
+	},
 
 	zoom: function(ev){
 		ev.preventDefault()
@@ -82,18 +113,6 @@ let visualizer = {
 		this.bounds.yMax = middleY + (zoom * yMaxVal)
 		this.bounds.yMin = middleY - (zoom * yMinVal) 
 
-
-		// if(Math.sign(delta) == 1){
-		// 	this.bounds.xMax  zoomAmount
-		// 	this.bounds.xMin *= zoomAmount
-		// 	this.bounds.yMax *= zoomAmount
-		// 	this.bounds.yMin *= zoomAmount
-		// } else {
-		// 	this.bounds.xMax *= zoomOut 
-		// 	this.bounds.xMin *= zoomOut
-		// 	this.bounds.yMax *= zoomOut
-		// 	this.bounds.yMin *= zoomOut
-		// }
 		this.represent()
 	},
 
@@ -189,10 +208,10 @@ let visualizer = {
 
    
 	bounds: {
-		xMax: 4,
-		xMin: -4,
-		yMax: 4,
-		yMin: -4
+		xMax: 14.5,
+		xMin: -14.5,
+		yMax: 3,
+		yMin: -2
 	},
 
 	middle: [0, 0],
@@ -204,13 +223,23 @@ let visualizer = {
 	 */
 	change_ybound_to_AR: function(){
 		this.get_plot_dimension();
-		let xrange = this.bounds.yMax - this.bounds.xMin;
+		let xrange = this.bounds.xMax - this.bounds.xMin;
 		let yrange = this.bounds.yMax - this.bounds.yMin;
 		// this.aspect_ratio = width / height
+		// this.aspect_ratio = xrange / new_yrange
+		// this.aspect_ratio * new_yrange = xrange.
+		// new_yrange = xtrange/this.aspect_ratio
 		let desired_yrange = xrange / this.aspect_ratio
 		let ratio = yrange / desired_yrange
-		this.bounds.yMax /= ratio;
-		this.bounds.yMin /= ratio;
+		// find the middle of these 2 values.
+		let mid = (this.bounds.yMax + this.bounds.yMin)/2
+		// find how long from middle to extremes 
+		let mag = (yrange/2) 
+		// change magnitude to the ratio we calculated. 
+		mag /= ratio
+		// console.log(ratio)
+		this.bounds.yMax = mid + mag;
+		this.bounds.yMin = mid - mag;
 		this.represent()
 	},
 
@@ -220,13 +249,19 @@ let visualizer = {
 	change_xbound_to_AR: function(){
 
 		this.get_plot_dimension();
-		let xrange = this.bounds.yMax - this.bounds.xMin;
+
+		let xrange = this.bounds.xMax - this.bounds.xMin;
 		let yrange = this.bounds.yMax - this.bounds.yMin;
 		// this.aspect_ratio = width / height
+		// this.aspect_ratio * height = new_xrange
 		let desired_xrange = yrange * this.aspect_ratio
 		let ratio = xrange / desired_xrange
-		this.bounds.xMax /= ratio;
-		this.bounds.xMin /= ratio;
+		let mid = (this.bounds.xMin + this.bounds.xMax)/2
+		let mag = (xrange / 2)
+		mag /= ratio
+
+		this.bounds.xMax = mid + mag;
+		this.bounds.xMin = mid - mag;
 		this.represent()
 	},
 
@@ -258,8 +293,9 @@ let visualizer = {
 
 
 		this.ctx.fillStyle = "#FFFFFF"
-		// this.ctx.strokeText(posY.toPrecision(1), po[0]-11, po[1]+5);
-		// this.ctx.font = "14px Cascadia Code";
+		this.ctx.font = "14px Cascadia Code";
+		this.ctx.fillText( `${this.aspect_ratio.toFixed(2)}`, 10.5, 20.5);
+		this.ctx.fillText( `${this.check_fullscreen()}`, 10.5, 35.5);
 		
 		this.ctx.fillText(`${this.mouse.x.toFixed(2)}, ${this.mouse.y.toFixed(2)}`, mou[0], mou[1]);
 		
@@ -424,8 +460,14 @@ let visualizer = {
 	},
 	liTo: function(pos){
 		this.ctx.lineTo(pos[0], pos[1])
-	}
+	},
 
+
+	roundme: function(x, n){
+		//find mask of length N
+		mask = Number(Math.pow(10, -n).toFixed(n))
+		return x - (x % mask)
+	}
 
 
 }

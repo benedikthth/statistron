@@ -3,14 +3,14 @@ let functionPresets = [
 {name: 'cartoid', f:
 `xx = (x + now /1000) / 3
 return ( Math.pow(sin(xx), 200)*4 ) + // R
-    (Math.pow(sin(xx+0.6), 400)/2.3) - // P 
-    (Math.pow(sin(xx+0.1), 400)*2.5)-    // Q
-    (Math.pow(sin(xx-0.1), 400)*2) +      // S
-    (Math.pow(sin(xx-0.5), 300)/2.5) +      // T
-    (Math.pow(sin(xx-0.9), 300)/2.5)       // U`},
-    
-{name: 'plain', f: 'return x'},
+(Math.pow(sin(xx+0.6), 400)/2.3) - // P 
+(Math.pow(sin(xx+0.1), 400)*2.5)-    // Q
+(Math.pow(sin(xx-0.1), 400)*2) +      // S
+(Math.pow(sin(xx-0.5), 300)/2.5) +      // T
+(Math.pow(sin(xx-0.9), 300)/2.5)       // U`},
 
+
+{name: 'plain', f: 'return x'},
 
 {name: 'pdf', f:
 `let sigma = 1; let mean = 0;
@@ -28,12 +28,15 @@ return (t * Math.pow(Math.E,e) )`},
 )`},
     
 
-{name: 'boobie_func', f: 
-`return Math.max(
-    Math.max( Math.max(0, sin(x)), -(((4*x)-(2*Math.PI))**2)+1.1),
-    Math.max( Math.max(0, sin(-x)), -(((4*x)+(2*Math.PI))**2)+1.1),
-    0.1
-)`},
+{name: 'boobie_func', f:
+`if(x > -3 && x < 3){
+    return max(
+        max( max(0, sin(x)), -(((4*x)-(2*PI))**2)+1.1),
+        max( max(0, sin(-x)), -(((4*x)+(2*PI))**2)+1.1),
+        0.1
+    )-.1
+}
+return 0`},
     
     
 {name:'sawtooth', f:

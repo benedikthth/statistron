@@ -3,7 +3,16 @@
 }
 #plotter {
     width: 90%;
+    z-index: 999;
+}
+.fullScreenPlotter { 
+    position: absolute;
+    top: 0.5%;
+    bottom: 0.5%;
 
+    width: 99.5% !important;
+    height: 98% !important;
+    overflow: hidden;
 }
 #canvasContainer{
     display: flex; 

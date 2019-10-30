@@ -34,11 +34,20 @@ class FunctionObject {
         this.nameBox.oninput = this.nameChange.bind(this);
         this.toggle_tb_button.onclick = this.toggle_textbox.bind(this)
         this.widthBox.oninput= this.handleWidthChange.bind(this)
+
+        this.nameBox.addEventListener('keydown', this.cancelFullscreen.bind(this))
+        this.widthBox.addEventListener('keydown', this.cancelFullscreen.bind(this))
         this.handleFunctionChange()
     }
 
     handleWidthChange(event){
         this.width = Number(this.widthBox.value)
+    }
+
+    cancelFullscreen = (ev)=>{
+        if(ev.key == 'f'){
+            ev.stopPropagation()
+        }
     }
 
     nameChange(ex){
@@ -97,13 +106,15 @@ class FunctionObject {
             ev.target.focus();
 
         }
+        if(ev.key == 'f'){
+            ev.stopPropagation()
+        }
     }
 
     handleFunctionChange (ev){
         if(ev){
             if(ev.data == ' '){ return; }
         }
-        console.log(ev)
         
 
         //remove unnamed funcs
