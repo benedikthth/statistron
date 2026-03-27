@@ -1,6 +1,6 @@
 let functionPresets = [
     
-{name: 'cartoid', f:
+{name: 'cardiac', f:
 `xx = (x + now /1000) / 3
 return ( Math.pow(sin(xx), 200)*4 ) + // R
 (Math.pow(sin(xx+0.6), 400)/2.3) - // P 
@@ -27,20 +27,10 @@ return (t * Math.pow(Math.E,e) )`},
     sin( x*10 + now/250)/4 
 )`},
     
-
-{name: 'boobie_func', f:
-`if(x > -3 && x < 3){
-    return max(
-        max( max(0, sin(x)), -(((4*x)-(2*PI))**2)+1.1),
-        max( max(0, sin(-x)), -(((4*x)+(2*PI))**2)+1.1),
-        0.1
-    )-.1
-}
-return 0`},
     
     
 {name:'sawtooth', f:
-`let n = now()/1000
+`let n = now/1000
 x = x-n
 let p = 1 //+ (sin(now/100)+1)/2;
 
